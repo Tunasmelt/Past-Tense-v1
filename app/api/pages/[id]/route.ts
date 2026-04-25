@@ -1,14 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+const getSupabaseClient = (token: string) => {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    }
+  )
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const supabase = getSupabaseClient(token)
     
-    if (!session) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    
+    if (!user || userError) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -19,7 +44,7 @@ export async function GET(
       .from('pages')
       .select('*')
       .eq('id', params.id)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (error) {
@@ -34,7 +59,6 @@ export async function GET(
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching page:', error)
     return NextResponse.json(
       { error: 'Failed to fetch page' },
       { status: 500 }
@@ -47,9 +71,20 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const supabase = getSupabaseClient(token)
     
-    if (!session) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    
+    if (!user || userError) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -69,7 +104,7 @@ export async function PUT(
         updated_at: new Date().toISOString(),
       })
       .eq('id', params.id)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
@@ -77,7 +112,6 @@ export async function PUT(
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating page:', error)
     return NextResponse.json(
       { error: 'Failed to update page' },
       { status: 500 }
@@ -90,9 +124,20 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const supabase = getSupabaseClient(token)
     
-    if (!session) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    
+    if (!user || userError) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -103,13 +148,12 @@ export async function DELETE(
       .from('pages')
       .delete()
       .eq('id', params.id)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
 
     if (error) throw error
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting page:', error)
     return NextResponse.json(
       { error: 'Failed to delete page' },
       { status: 500 }

@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: 'Manifest',
   description: 'Create beautiful stories with canvas-style editing and immersive reading',
   generator: 'v0.app',
+  manifest: '/manifest.json',
   icons: {
     icon: [
       {
