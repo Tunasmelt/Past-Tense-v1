@@ -41,7 +41,6 @@ export default function DashboardPage() {
         setPages(data)
       } catch (err) {
         setError('Failed to load pages')
-        console.error(err)
       } finally {
         setLoading(false)
       }
@@ -67,7 +66,7 @@ export default function DashboardPage() {
         router.push(`/editor/${newPage.id}`)
       }
     } catch (err) {
-      console.error('Error creating page:', err)
+      // Error handled silently
     }
   }
 
@@ -82,7 +81,7 @@ export default function DashboardPage() {
         setPages(pages.filter((p) => p.id !== pageId))
       }
     } catch (err) {
-      console.error('Error deleting page:', err)
+      // Error handled silently
     }
   }
 
@@ -91,7 +90,7 @@ export default function DashboardPage() {
       await signOut()
       router.push('/')
     } catch (err) {
-      console.error('Error signing out:', err)
+      // Error handled silently
     }
   }
 
@@ -110,12 +109,12 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
+      <nav className="sticky top-0 z-50 border-b border-primary/20 bg-background/98 backdrop-blur-lg">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">Manifest</span>
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-7 w-7 text-primary" />
+              <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Manifest</span>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">
@@ -135,16 +134,16 @@ export default function DashboardPage() {
       </nav>
 
       {/* Header */}
-      <section className="border-b border-border bg-muted/50 py-12">
+      <section className="border-b border-primary/20 bg-gradient-to-b from-primary/10 to-background py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold mb-2">My Stories</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-5xl font-bold mb-3 text-primary">My Stories</h1>
+              <p className="text-muted-foreground text-lg">
                 {pages.length} {pages.length === 1 ? 'story' : 'stories'}
               </p>
             </div>
-            <Button onClick={handleCreatePage} size="lg" className="gap-2">
+            <Button onClick={handleCreatePage} size="lg" className="gap-2 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg">
               <Plus className="h-5 w-5" />
               New Story
             </Button>
@@ -173,40 +172,40 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pages.map((page) => (
-              <Card key={page.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <Card key={page.id} className="overflow-hidden border-primary/30 hover:border-primary/60 hover:shadow-xl transition-all duration-300 bg-card/80 backdrop-blur-sm">
                 {page.thumbnail_url && (
-                  <div className="w-full h-48 bg-muted overflow-hidden">
+                  <div className="w-full h-48 bg-muted/30 overflow-hidden border-b border-primary/20">
                     <img
                       src={page.thumbnail_url}
                       alt={page.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                 )}
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                <div className="p-5">
+                  <h3 className="font-bold text-lg mb-2 line-clamp-2 text-foreground">
                     {page.title}
                   </h3>
                   {page.description && (
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
                       {page.description}
                     </p>
                   )}
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      page.status === 'public' ? 'bg-green-100 text-green-800' :
-                      page.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
+                  <div className="flex items-center gap-2 mb-5">
+                    <span className={`text-xs px-3 py-1 rounded font-bold uppercase tracking-wider ${
+                      page.status === 'public' ? 'bg-primary/20 text-primary' :
+                      page.status === 'draft' ? 'bg-muted/40 text-muted-foreground' :
+                      'bg-muted/30 text-muted-foreground'
                     }`}>
                       {page.status}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground font-medium">
                       {page.layout_mode}
                     </span>
                   </div>
                   <div className="flex gap-2">
                     <Link href={`/editor/${page.id}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full gap-2">
+                      <Button variant="outline" size="sm" className="w-full gap-2 border-primary/30 hover:border-primary/60 hover:text-primary font-semibold">
                         <Edit2 className="h-4 w-4" />
                         Edit
                       </Button>
@@ -214,7 +213,7 @@ export default function DashboardPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-2"
+                      className="gap-2 border-primary/30 hover:border-primary/60 hover:text-primary"
                       title="Share"
                     >
                       <Share2 className="h-4 w-4" />
@@ -223,10 +222,10 @@ export default function DashboardPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDeletePage(page.id)}
-                      className="gap-2"
+                      className="gap-2 border-destructive/30 hover:border-destructive/60 hover:text-destructive"
                       title="Delete"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

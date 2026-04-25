@@ -22,25 +22,14 @@ export async function GET(req: NextRequest) {
   try {
     // Get today's resurface items
     const today = new Date().toISOString().split('T')[0]
-    const { data: resurfaces, error } = await supabase
+    const { data: queueItems, error } = await supabase
       .from('archive_resurface_queue')
       .select(`
         id,
         page_id,
         scheduled_for,
         surfaced_at,
-        dismissed,
-        pages:page_id (
-          id,
-          title,
-          description,
-          thumbnail_url,
-          user_id,
-          users:user_id (
-            display_name,
-            avatar_url
-          )
-        )
+        dismissed
       `)
       .eq('user_id', user.id)
       .eq('scheduled_for', today)
@@ -50,7 +39,37 @@ export async function GET(req: NextRequest) {
 
     if (error) throw error
 
-    return NextResponse.json({ resurfaces })
+    // Fetch pages separately to avoid nested join issues
+    const pageIds = queueItems?.map((item: any) => item.page_id) || []
+    
+    let pages: any[] = []
+    if (pageIds.length > 0) {
+      const { data: pageData, error: pageError } = await supabase
+        .from('pages')
+        .select(`
+          id,
+          title,
+          description,
+          thumbnail_url,
+          user_id,
+          users:user_id (
+            display_name,
+            avatar_url
+          )
+        `)
+        .in('id', pageIds)
+      
+      if (pageError) throw pageError
+      pages = pageData || []
+    }
+
+    // Combine queue items with page data
+    const resurfaces = queueItems?.map((item: any) => {
+      const page = pages.find((p: any) => p.id === item.page_id)
+      return { ...item, ...page }
+    }) || []
+
+    return NextResponse.json({ resurfaces: resurfaces || [] })
   } catch (error) {
     console.error('Error fetching resurfaces:', error)
     return NextResponse.json(

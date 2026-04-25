@@ -39,7 +39,7 @@ export default function ArchiveResurface() {
         const data = await response.json()
         setResurfaces(data.resurfaces || [])
       } catch (error) {
-        console.error('Error fetching resurfaces:', error)
+        // Silently handle fetch errors - component won't render if no resurfaces
       } finally {
         setLoading(false)
       }
@@ -61,7 +61,7 @@ export default function ArchiveResurface() {
 
       setResurfaces(resurfaces.filter(r => r.id !== pageId))
     } catch (error) {
-      console.error('Error marking as surfaced:', error)
+      // Silently handle errors
     }
   }
 
@@ -79,7 +79,7 @@ export default function ArchiveResurface() {
       setDismissed(new Set([...dismissed, pageId]))
       setResurfaces(resurfaces.filter(r => r.id !== pageId))
     } catch (error) {
-      console.error('Error dismissing resurface:', error)
+      // Silently handle errors
     }
   }
 
@@ -89,12 +89,12 @@ export default function ArchiveResurface() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm">
-      <Card className="p-4 bg-background border-border shadow-lg">
-        <div className="flex items-start justify-between mb-3">
+      <Card className="p-5 bg-card border border-primary/30 shadow-2xl backdrop-blur-sm">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold text-foreground">
-              Resurfaced Story
+            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
+              From Your Archive
             </h3>
           </div>
           <button
@@ -103,19 +103,19 @@ export default function ArchiveResurface() {
                 handleDismiss(resurfaces[0].id)
               }
             }}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-primary transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {resurfaces.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <h4 className="font-medium text-foreground line-clamp-2">
+              <h4 className="font-bold text-foreground line-clamp-2 text-lg">
                 {resurfaces[0].title}
               </h4>
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+              <p className="text-sm text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
                 {resurfaces[0].description || 'No description'}
               </p>
             </div>
@@ -133,11 +133,11 @@ export default function ArchiveResurface() {
               </div>
             )}
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-3 pt-3">
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1"
+                className="flex-1 font-semibold border-muted-foreground/40 hover:border-primary/60 text-muted-foreground hover:text-foreground"
                 onClick={() => {
                   if (resurfaces.length > 0) {
                     handleDismiss(resurfaces[0].id)
@@ -148,11 +148,10 @@ export default function ArchiveResurface() {
               </Button>
               <Button
                 size="sm"
-                className="flex-1"
+                className="flex-1 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
                 onClick={() => {
                   if (resurfaces.length > 0) {
                     handleMarkSurfaced(resurfaces[0].id)
-                    // Navigate to reader
                     window.location.href = `/reader/${resurfaces[0].id}`
                   }
                 }}
@@ -162,7 +161,7 @@ export default function ArchiveResurface() {
             </div>
 
             {resurfaces.length > 1 && (
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-muted-foreground text-center pt-1">
                 +{resurfaces.length - 1} more today
               </p>
             )}
