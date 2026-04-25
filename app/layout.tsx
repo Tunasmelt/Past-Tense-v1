@@ -1,14 +1,16 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import OfflineIndicator from '@/components/OfflineIndicator'
+import OfflineInitializer from '@/components/OfflineInitializer'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Manifest',
+  description: 'Create beautiful stories with canvas-style editing and immersive reading',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -37,7 +39,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
+        <OfflineInitializer />
         {children}
+        <OfflineIndicator />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
