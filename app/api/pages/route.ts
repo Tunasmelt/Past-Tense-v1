@@ -1,14 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') || 'private'
     
-    const { data: { session } } = await supabase.auth.getSession()
+    // Get token from Authorization header
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
     
-    if (!session) {
+    // Create a client with the user's token
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    )
+
+    // Get user from token
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    
+    if (!user || userError) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -18,7 +43,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('pages')
       .select('*')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
 
     if (status) {
       query = query.eq('status', status)
@@ -30,7 +55,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching pages:', error)
     return NextResponse.json(
       { error: 'Failed to fetch pages' },
       { status: 500 }
@@ -40,9 +64,31 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
     
-    if (!session) {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    )
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    
+    if (!user || userError) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -62,7 +108,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('pages')
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         title,
         description,
         layout_mode,
@@ -75,7 +121,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 })
   } catch (error) {
-    console.error('Error creating page:', error)
     return NextResponse.json(
       { error: 'Failed to create page' },
       { status: 500 }

@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   title: 'Manifest',
   description: 'Create beautiful stories with canvas-style editing and immersive reading',
   generator: 'v0.app',
+  manifest: '/manifest.json',
+  colorScheme: 'dark',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    themeColor: '#1a1a1a',
+  },
   icons: {
     icon: [
       {
@@ -38,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className="font-sans antialiased">
         <OfflineInitializer />
         {children}

@@ -28,7 +28,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchPages = async () => {
       try {
-        const response = await fetch('/api/pages')
+        if (!session) return
+        
+        const response = await fetch('/api/pages', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        })
         if (!response.ok) {
           if (response.status === 401) {
             router.push('/auth/login')
@@ -52,10 +58,15 @@ export default function DashboardPage() {
   }, [session, router])
 
   const handleCreatePage = async () => {
+    if (!session) return
+    
     try {
       const response = await fetch('/api/pages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           title: 'Untitled',
           layout_mode: 'portrait',
@@ -72,10 +83,14 @@ export default function DashboardPage() {
 
   const handleDeletePage = async (pageId: string) => {
     if (!confirm('Are you sure you want to delete this page?')) return
+    if (!session) return
     
     try {
       const response = await fetch(`/api/pages/${pageId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
       })
       if (response.ok) {
         setPages(pages.filter((p) => p.id !== pageId))

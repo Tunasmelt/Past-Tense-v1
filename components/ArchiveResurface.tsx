@@ -18,19 +18,22 @@ interface ResurfacedPage {
 }
 
 export default function ArchiveResurface() {
-  const { user } = useAuth()
+  const { user, session, loading: authLoading } = useAuth()
   const [resurfaces, setResurfaces] = useState<ResurfacedPage[]>([])
   const [loading, setLoading] = useState(true)
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    if (!user) return
+    if (!user || !session) {
+      setLoading(false)
+      return
+    }
 
     const fetchResurfaces = async () => {
       try {
         const response = await fetch('/api/archive/resurface', {
           headers: {
-            'Authorization': `Bearer ${user.id}`,
+            'Authorization': `Bearer ${session.access_token}`,
           },
         })
 
@@ -49,11 +52,12 @@ export default function ArchiveResurface() {
   }, [user])
 
   const handleMarkSurfaced = async (pageId: string) => {
+    if (!session) return
     try {
       await fetch('/api/archive/resurface', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${user?.id}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ action: 'mark-surfaced', pageId }),
@@ -66,11 +70,12 @@ export default function ArchiveResurface() {
   }
 
   const handleDismiss = async (pageId: string) => {
+    if (!session) return
     try {
       await fetch('/api/archive/resurface', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${user?.id}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ action: 'dismiss', pageId }),
@@ -83,9 +88,10 @@ export default function ArchiveResurface() {
     }
   }
 
-  if (!user || loading) return null
-
-  if (resurfaces.length === 0) return null
+  // Don't render until auth is loaded to prevent hydration mismatch
+  if (authLoading || !user || loading || resurfaces.length === 0) {
+    return null
+  }
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm">
