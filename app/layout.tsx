@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import OfflineIndicator from '@/components/OfflineIndicator'
 import OfflineInitializer from '@/components/OfflineInitializer'
+import ArchiveResurface from '@/components/ArchiveResurface'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <OfflineInitializer />
         {children}
+        <ArchiveResurface />
         <OfflineIndicator />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
